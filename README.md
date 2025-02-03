@@ -1,4 +1,4 @@
-# Trip Planner App
+# shivam pandey app
 
 Welcome to the **Trip Planner App**, a modern web application built with **React** and **Vite**. This app is designed to help users plan their trips efficiently by providing an intuitive interface and powerful features.
 
