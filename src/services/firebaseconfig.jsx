@@ -1,19 +1,17 @@
-
+// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import {getFirestore} from "firebase/firestore"
-
 const firebaseConfig = {
-  apiKey: "AIzaSyCKbR4qwKYe57pA8zh01RPiXmisFomkqfA",
-  authDomain: "trip-planer-80628.firebaseapp.com",
-  projectId: "trip-planer-80628",
-  storageBucket: "trip-planer-80628.firebasestorage.app",
-  messagingSenderId: "928922423372",
-  appId: "1:928922423372:web:62bce3dc54a97a9fca64e9",
-  measurementId: "G-Q3XPCKPHMB"
+  apiKey: "AIzaSyAOfhyTu8lY-dqsYfWhPyehHY2PPO62fus",
+  authDomain: "mytrip-938af.firebaseapp.com",
+  projectId: "mytrip-938af",
+  storageBucket: "mytrip-938af.firebasestorage.app",
+  messagingSenderId: "584906147500",
+  appId: "1:584906147500:web:1aca00bff2953510a0c109",
+  measurementId: "G-54BY19VSS4"
 };
 
-
+// Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-//export const analytics = getAnalytics(app);
 export const db = getFirestore(app);
