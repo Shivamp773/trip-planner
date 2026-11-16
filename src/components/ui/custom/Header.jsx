@@ -1,87 +1,86 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from '../button';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { googleLogout } from '@react-oauth/google';
-import { FcGoogle } from 'react-icons/fc';
-import { Dialog, DialogContent, DialogDescription, DialogHeader } from "@/components/ui/dialog";
-import { useGoogleLogin } from '@react-oauth/google';
-import axios from 'axios';
+import { useState } from 'react';
+import { Link } from 'react-router';
+import { LogOut, Map as MapIcon, Plus } from 'lucide-react';
+import { toast } from 'sonner';
+import SignInDialog from '@/components/SignInDialog';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { signOut, useUser } from '@/lib/auth';
 
-function Header() {
-  const [openDialog, setOpenDialog] = useState(false);
-  const user = JSON.parse(localStorage.getItem('user'));
+function Avatar({ user }) {
+  const [failed, setFailed] = useState(false);
+  const initial = (user.given_name || user.name || user.email || '?').charAt(0).toUpperCase();
 
-  const login = useGoogleLogin({
-    onSuccess: (resp) => {
-      getUserProfile(resp);
-    },
-    onError: (error) => console.log(error)
-  });
-
-  const getUserProfile = (tokenInfo) => {
-    axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`,
-      {
-        headers: {
-          Authorization: `Bearer ${tokenInfo?.access_token}`,
-          Accept: 'Application/json'
-        }
-      }
-    )
-      .then((response) => {
-        localStorage.setItem('user', JSON.stringify(response.data));
-        setOpenDialog(false);
-        window.location.reload();
-      });
-  };
-
-  useEffect(() => {
-    console.log(user);
-  }, []);
-
+  if (!user.picture || failed) {
+    return (
+      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f56551] font-semibold text-white">
+        {initial}
+      </span>
+    );
+  }
   return (
-    <div className='p-3 shadow-sm flex justify-between items-center px-6 bg-transparent'>
-      <img src="/logo.svg" alt="Logo" />
-      <div>
-        {user ?
-          <div className='flex items-center gap-3'>
-            <a href='/create-trip'>
-              <Button variant="outline" className="rounded-full">+ Create trip</Button>
-            </a>
-            <a href='/my-trips'>
-              <Button variant="outline" className="rounded-full">My trips</Button>
-            </a>
-            <Popover>
-              <PopoverTrigger>
-                <img src={user?.picture} className='h-[35px] w-[35px] rounded-full' alt="Profile" />
-              </PopoverTrigger>
-              <PopoverContent>
-                <h2 className='cursor-pointer' onClick={() => {
-                  googleLogout();
-                  localStorage.clear();
-                  window.location.reload();
-                }}>Log out</h2>
-              </PopoverContent>
-            </Popover>
-          </div> :
-          <Button onClick={() => setOpenDialog(true)}>Sign In</Button>
-        }
-      </div>
-      <Dialog open={openDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogDescription>
-              <img src="logo.svg" alt="Logo" />
-              <h2 className='font-bold text-lg mt-7'>Sign in with Google</h2>
-              <p className='mt-1'>Securely sign in with Google account</p>
-              <Button onClick={login} className='w-full mt-5 flex gap-4 items-center'>
-                <FcGoogle className='h-7 w-7 flex' />Sign In with Google
-              </Button>
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-    </div>
+    <img
+      src={user.picture}
+      alt=""
+      referrerPolicy="no-referrer"
+      onError={() => setFailed(true)}
+      className="h-9 w-9 rounded-full object-cover"
+    />
   );
 }
 
-export default Header;
+export default function Header() {
+  const user = useUser();
+  const [signInOpen, setSignInOpen] = useState(false);
+
+  const handleSignOut = () => {
+    signOut();
+    toast.success('Signed out');
+  };
+
+  return (
+    <header className="sticky top-0 z-40 border-b bg-white/90 backdrop-blur print:hidden">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+        <Link to="/" className="shrink-0" aria-label="AI Trip Planner home">
+          <img src="/logo.svg" alt="AI Trip Planner" className="h-7 w-auto" />
+        </Link>
+
+        {user ? (
+          <nav className="flex items-center gap-2 sm:gap-3" aria-label="Main">
+            <Button asChild variant="outline" className="rounded-full">
+              <Link to="/create-trip" aria-label="Create trip">
+                <Plus />
+                <span className="hidden sm:inline">Create trip</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="rounded-full">
+              <Link to="/my-trips" aria-label="My trips">
+                <MapIcon />
+                <span className="hidden sm:inline">My trips</span>
+              </Link>
+            </Button>
+            <Popover>
+              <PopoverTrigger
+                className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-label="Account menu"
+              >
+                <Avatar user={user} />
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-64">
+                <p className="truncate font-medium">{user.name}</p>
+                <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+                <Button variant="ghost" className="mt-3 w-full justify-start px-2" onClick={handleSignOut}>
+                  <LogOut /> Log out
+                </Button>
+              </PopoverContent>
+            </Popover>
+          </nav>
+        ) : (
+          <Button onClick={() => setSignInOpen(true)}>Sign in</Button>
+        )}
+      </div>
+
+      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} />
+    </header>
+  );
+}

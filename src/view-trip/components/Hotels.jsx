@@ -1,21 +1,15 @@
-import React from 'react';
 import HotelCard from './HotelCard';
 
-function Hotels({ tripInfo }) {
+export default function Hotels({ plan }) {
+  if (plan.hotels.length === 0) return null;
   return (
-    <div className='container mx-auto py-8'>
-      <h2 className='font-bold text-2xl md:text-3xl text-gray-800 mb-6'>
-        Hotel Recommendations
-      </h2>
-      <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
-        {tripInfo?.tripData?.hotels?.map((hotel, index) => (
-          <div key={index} className='flex justify-center'>
-            <HotelCard hotelInfo={hotel} />
-          </div>
+    <section className="py-8">
+      <h2 className="mb-6 text-2xl font-bold text-gray-800 md:text-3xl">Hotel Recommendations</h2>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {plan.hotels.map((hotel, index) => (
+          <HotelCard key={`${hotel.name}-${index}`} hotel={hotel} destination={plan.destination} />
         ))}
       </div>
-    </div>
+    </section>
   );
 }
-
-export default Hotels;

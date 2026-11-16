@@ -1,61 +1,58 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { AiOutlineDollar, AiFillStar } from 'react-icons/ai';
-import { FaMapMarkerAlt } from 'react-icons/fa';
-import { Button } from '@/components/ui/button';
-import GlobalAPI from '@/services/GlobalAPI';
+import { MapPin, Star, Wallet } from 'lucide-react';
+import { fallbackToPlaceholder, usePlacePhoto } from '@/hooks/usePlacePhoto';
+import { mapsSearchUrl } from '@/lib/trip';
 
-function HotelCard({ hotelInfo }) {
-  const [photoUrl, setPhotoUrl] = useState(null);  
-  const [loading, setLoading] = useState(true); 
-
-  const handlePhotoFetched = (url) => {
-    setPhotoUrl(url);
-    setLoading(false); 
-  };
+export default function HotelCard({ hotel, destination }) {
+  // Wikipedia rarely has a reliable photo of a specific hotel, so only GoMaps is used here.
+  const { url, loading } = usePlacePhoto([hotel.name, destination].filter(Boolean).join(', '), {
+    allowWikipedia: false,
+  });
 
   return (
-    <div className="h-full">
-      <Link to={'https://www.google.com/maps/search/?api=1&query=' + hotelInfo.name + "," + hotelInfo.address} target="_blank">
-        <div className="hover:scale-105 transition-all cursor-pointer h-full flex flex-col">
-          <GlobalAPI
-            name={hotelInfo.name}
-            address={hotelInfo.address}
-            onPhotoFetched={handlePhotoFetched}
+    <a
+      href={mapsSearchUrl(hotel.name, hotel.address || destination)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex h-full break-inside-avoid flex-col overflow-hidden rounded-xl border bg-white transition hover:-translate-y-1 hover:shadow-lg"
+    >
+      <div className="h-44 bg-gray-100">
+        {loading ? (
+          <div className="h-full w-full animate-pulse bg-gray-200" />
+        ) : (
+          <img
+            src={url}
+            alt={hotel.name}
+            loading="lazy"
+            onError={fallbackToPlaceholder}
+            className="h-full w-full object-cover"
           />
+        )}
+      </div>
 
-         
-            <div className="relative">
-            {!loading && photoUrl && (
-                <img src={photoUrl} alt={hotelInfo.name} className="rounded-xl w-full h-40 object-cover" />
-            )}
-            </div>
-
-
-
-          <div className="flex flex-col my-2 flex-grow">
-            <div className="flex items-center justify-between">
-              <h2 className="font-medium text-black">{hotelInfo.name}</h2>
-              <h2 className="font-medium flex items-center gap-1 text-gray-600">
-                <AiFillStar className="text-yellow-400 hover:text-yellow-500" />
-                {hotelInfo?.rating}
-              </h2>
-            </div>
-
-            <div className="flex items-center gap-2 text-xs text-gray-500 my-3">
-              <FaMapMarkerAlt className="text-pink-500" />
-              <span>{hotelInfo.address}</span>
-            </div>
-
-            <Button className="flex items-center gap-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:from-pink-600 hover:to-purple-600 mt-auto">
-              <AiOutlineDollar />
-              <span>{hotelInfo.price}</span>
-            </Button>
-          </div>
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-semibold text-gray-900">{hotel.name}</h3>
+          {hotel.rating !== null && (
+            <span className="flex shrink-0 items-center gap-1 text-sm text-gray-600">
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
+              {hotel.rating}
+            </span>
+          )}
         </div>
-      </Link>
-    </div>
+        {hotel.address && (
+          <p className="flex gap-1.5 text-xs text-gray-500">
+            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-pink-500" aria-hidden="true" />
+            {hotel.address}
+          </p>
+        )}
+        {hotel.description && <p className="line-clamp-2 text-sm text-gray-600">{hotel.description}</p>}
+        {hotel.price && (
+          <span className="mt-auto inline-flex w-fit items-center gap-1.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 px-3 py-1 text-sm font-medium text-white">
+            <Wallet className="h-4 w-4" aria-hidden="true" />
+            {hotel.price}
+          </span>
+        )}
+      </div>
+    </a>
   );
 }
-
-export default HotelCard;
