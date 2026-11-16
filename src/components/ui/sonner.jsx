@@ -1,28 +1,17 @@
-import { useTheme } from "next-themes"
-import { Toaster as Sonner } from "sonner"
+import { Toaster as Sonner } from 'sonner';
 
-const Toaster = ({
-  ...props
-}) => {
-  const { theme = "system" } = useTheme()
+// Single app-wide toaster (light theme to match the UI; rich colours for success/error/info).
+// Top-centre, just below the sticky header, so toasts never cover the form's main button.
+const Toaster = (props) => (
+  <Sonner
+    theme="light"
+    richColors
+    position="top-center"
+    offset={80}
+    className="toaster group"
+    toastOptions={{ style: { fontFamily: 'Inter, system-ui, sans-serif' } }}
+    {...props}
+  />
+);
 
-  return (
-    (<Sonner
-      theme={theme}
-      className="toaster group"
-      toastOptions={{
-        classNames: {
-          toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-muted-foreground",
-          actionButton:
-            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-          cancelButton:
-            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-        },
-      }}
-      {...props} />)
-  );
-}
-
-export { Toaster }
+export { Toaster };
